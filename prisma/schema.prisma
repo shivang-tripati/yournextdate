@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String         @id @default(uuid())
+  email            String         @unique
+  name             String
+  country          String
+  city             String
+  nearBy           String
+  gender           String
+  dateOfBirth      DateTime
+  passwordHash     String
+  likesReceived    Like[]         @relation("LikesReceived")
+  likesSent        Like[]         @relation("LikesSent")
+  matchesAsUser1   Match[]        @relation("MatchesAsUser1")
+  matchesAsUser2   Match[]        @relation("MatchesAsUser2")
+  messagesReceived Message[]      @relation("ReceivedMessages")
+  messagesSent     Message[]      @relation("SentMessages")
+  notifications    Notification[]
+  preferences      Preference[]
+  profile          Profile?
+  responses        Response[]
+}
+
+model Profile {
+  id                String   @id @default(uuid())
+  userId            String   @unique
+  ideaPerson        String
+  bio               String
+  profilePictureUrl String
+  images            String[]
+  user              User     @relation(fields: [userId], references: [id])
+}
+
+model Message {
+  id          String   @id @default(uuid())
+  senderId    String
+  receiverId  String
+  messageText String
+  createdAt   DateTime @default(now()) @db.Timestamptz(6)
+  receiver    User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id])
+}
+
+model Preference {
+  id        String   @id @default(uuid())
+  userId    String
+  ageRange  String
+  gender    String
+  interests String[]
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Like {
+  id         String   @id @default(uuid())
+  senderId   String
+  receiverId String
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+  receiver   User     @relation("LikesReceived", fields: [receiverId], references: [id])
+  sender     User     @relation("LikesSent", fields: [senderId], references: [id])
+}
+
+model Match {
+  id        String   @id @default(uuid())
+  user1Id   String
+  user2Id   String
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  user1     User     @relation("MatchesAsUser1", fields: [user1Id], references: [id])
+  user2     User     @relation("MatchesAsUser2", fields: [user2Id], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  content   String
+  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Question {
+  id       String   @id @default(uuid())
+  question String
+  name     String?
+  options  Option[]
+}
+
+model Option {
+  id         String     @id @default(uuid())
+  questionId String
+  optionText String
+  question   Question   @relation(fields: [questionId], references: [id])
+  responses  Response[]
+}
+
+model Response {
+  id       String @id @default(uuid())
+  userId   String
+  optionId String
+  option   Option @relation(fields: [optionId], references: [id])
+  user     User   @relation(fields: [userId], references: [id])
+}
