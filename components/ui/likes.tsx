@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import useAuthStore from "@/hooks/user-auth-store";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const Likes = () => {
   const [likesSent, setLikesSent] = useState<any[]>([]);
@@ -44,7 +45,7 @@ const Likes = () => {
     } finally {
       setLoading(false);
     }
-  }, [userId, refresh]);
+  }, [userId]);
 
   useEffect(() => {
     fetchLikes();
@@ -87,7 +88,7 @@ const Likes = () => {
                 key={like.senderId}
                 className="p-4 border border-gray-300 rounded-md flex items-center"
               >
-                <img
+                <Image
                   src={like.sender.profilePictureUrl}
                   alt={`${like.sender.name}'s profile`}
                   className="w-16 h-16 rounded-full border border-gray-300"
@@ -118,7 +119,7 @@ const Likes = () => {
                 key={like.receiverId}
                 className="p-4 border border-gray-300 rounded-md flex items-center"
               >
-                <img
+                <Image
                   src={like.receiver.profilePictureUrl}
                   alt={`${like.receiver.name}'s profile`}
                   className="w-16 h-16 rounded-full border border-gray-300"

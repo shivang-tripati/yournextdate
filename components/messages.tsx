@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Chat from "./ui/chat";
 import axios from "axios";
 import useAuthStore from "@/hooks/user-auth-store";
+import Image from "next/image";
 
 interface User {
   id: string;
@@ -25,7 +26,7 @@ const Messages: React.FC = () => {
     };
 
     fetchContacts();
-  }, []);
+  }, [user?.city]);
 
   return (
     <div className="flex h-screen">
@@ -38,7 +39,7 @@ const Messages: React.FC = () => {
               onClick={() => setActiveUser(contact.id)}
               className="flex items-center w-full p-2 bg-white rounded-lg shadow hover:bg-gray-100"
             >
-              <img
+              <Image
                 src="https://th.bing.com/th/id/OIP.JBpgUJhTt8cI2V05-Uf53AHaG1?w=198&h=183&c=7&r=0&o=5&dpr=1.3&pid=1.7"
                 alt={contact.name}
                 className="w-12 h-12 rounded-full mr-3"

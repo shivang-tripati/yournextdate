@@ -158,7 +158,7 @@ const steps = [
   },
 ];
 
-const seed = async () => {
+// const seed = async () => {
   // Create sample users
   // const usersPromises = [];
   // for (let i = 0; i < 15; i++) {
@@ -210,7 +210,7 @@ const seed = async () => {
   // const users = await Promise.all(usersPromises);
   // console.log(`Created ${users.length} users`);
 
-  // Create sample messages
+  // // Create sample messages
   // const messagesPromises = [];
   // for (let i = 0; i < 20; i++) {
   //   const sender = faker.helpers.arrayElement(users);
@@ -232,7 +232,7 @@ const seed = async () => {
   // await Promise.all(messagesPromises);
   // console.log(`Created ${messagesPromises.length} messages`);
 
-  // Create sample likes
+  // // Create sample likes
   
   // const likesPromises = [];
   // for (let i = 0; i < 20; i++) {
@@ -255,9 +255,9 @@ const seed = async () => {
   // console.log(`Created ${likesPromises.length} likes`);
 
 
-  const users = await prisma.user.findMany({});
+//   const users = await prisma.user.findMany({});
   
- // Create questions and options
+//  // Create questions and options
 //  const questionPromises = steps.map(async step => {
 //   const question = await prisma.question.create({
 //     data: {
@@ -286,58 +286,147 @@ const seed = async () => {
 //   await Promise.all(questionPromises);
 //   console.log(`Created ${questionPromises.length} questions`);
 
-const responsePromises = users.flatMap(async user => {
-  return Promise.all(
-    steps.flatMap(async step => {
-      const question = await prisma.question.findFirst({
-        where: { name: step.name },
-      });
+// const responsePromises = users.flatMap(async user => {
+//   return Promise.all(
+//     steps.flatMap(async step => {
+//       const question = await prisma.question.findFirst({
+//         where: { name: step.name },
+//       });
 
-      if (!question) return [];
+//       if (!question) return [];
 
-      let option;
-      if (step.type === 'range') {
-        // Generate a random age range
-        const randomAge = faker.number.int({ min: 18, max: 35 });
-        option = await prisma.option.findFirst({
-          where: {
+//       let option;
+//       if (step.type === 'range') {
+//         // Generate a random age range
+//         const randomAge = faker.number.int({ min: 18, max: 35 });
+//         option = await prisma.option.findFirst({
+//           where: {
+//             questionId: question.id,
+//             questionText: {
+//               contains: randomAge.toString(),
+//             },
+//           },
+//         });
+//       } else {
+//         // Single choice options
+//         option = await prisma.option.findFirst({
+//           where: {
+//             questionId: question.id,
+//             questionText: {
+//               in: step.options,
+//             },
+//           },
+//         });
+//       }
+
+//       if (!option) return [];
+
+//       return prisma.response.create({
+//         data: {
+//           userId: user.id,
+//           optionId: option.id,
+//         },
+//       });
+//     })
+//   );
+// });
+
+// await Promise.all(responsePromises);
+// console.log('Created responses for all users');
+
+//   await prisma.$disconnect();
+// };
+
+// seed().catch(e => {
+//   console.error(e);
+//   process.exit(1);
+// });
+
+const seed = async () => {
+  const users = await prisma.user.findMany({});
+
+  // Create questions and options
+  const questionPromises = steps.map(async step => {
+    const question = await prisma.question.create({
+      data: {
+        question: step.question,
+        name: step.name,
+      },
+    });
+
+    if (step.options) {
+      const optionPromises = step.options.map(option => {
+        return prisma.option.create({
+          data: {
+            optionText: option,
             questionId: question.id,
-            questionText: {
-              contains: randomAge.toString(),
-            },
           },
         });
-      } else {
-        // Single choice options
-        option = await prisma.option.findFirst({
-          where: {
-            questionId: question.id,
-            questionText: {
-              in: step.options,
-            },
-          },
-        });
-      }
-
-      if (!option) return [];
-
-      return prisma.response.create({
-        data: {
-          userId: user.id,
-          optionId: option.id,
-        },
       });
-    })
-  );
-});
 
-await Promise.all(responsePromises);
-console.log('Created responses for all users');
+      await Promise.all(optionPromises);
+      console.log(`Created options for question: ${question.question}`);
+    }
 
-  await prisma.$disconnect();
+    console.log(`Created question: ${question.question}`);
+  });
+
+  await Promise.all(questionPromises);
+  console.log(`Created ${steps.length} questions`);
+
+  // Create user responses to questions
+  const responsePromises = users.flatMap(async user => {
+    return Promise.all(
+      steps.map(async step => {
+        const question = await prisma.question.findFirst({
+          where: { name: step.name },
+        });
+
+        if (!question) return [];
+
+        let option;
+        if (step.type === 'range') {
+          // Handle range-based response
+          const randomAge = faker.number.int({ min: 18, max: 35 });
+          option = await prisma.option.findFirst({
+            where: {
+              questionId: question.id,
+              optionText: { contains: randomAge.toString() },
+            },
+          });
+        } else {
+          // Handle regular option-based question
+          option = await prisma.option.findFirst({
+            where: {
+              questionId: question.id,
+              optionText: { in: step.options },
+            },
+          });
+        }
+
+        if (option) {
+          await prisma.userResponse.create({
+            data: {
+              userId: user.id,
+              questionId: question.id,
+              optionId: option.id,
+            },
+          });
+          console.log(`User ${user.email} answered ${question.question}`);
+        }
+      })
+    );
+  });
+
+  await Promise.all(responsePromises);
+  console.log(`Created responses for ${users.length} users`);
 };
 
-seed().catch(e => {
-  console.error(e);
-  process.exit(1);
-});
+seed()
+  .catch(e => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

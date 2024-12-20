@@ -96,11 +96,6 @@ const Footer = () => {
                   Safety Tips
                 </Link>
               </li>
-              <li>
-                <Link href="#" className="hover:text-gray-400 text-sm">
-                  Impressum
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -137,7 +132,7 @@ const Footer = () => {
           </div>
         </div>
         <div className="mt-8 text-center">
-          <p>© OkBud's 2024</p>
+          <p>© 2024 MatchUp. All rights reserved.</p>
         </div>
       </div>
     </footer>

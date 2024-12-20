@@ -1,10 +1,10 @@
-// app/api/profile/[userId]/route.ts
 
-import { NextApiRequest, NextApiResponse } from "next";
-import { NextResponse } from "next/server";
+
+
+import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/lib/prisma";
 
-export async function GET(req: NextApiRequest, { params }: { params: { userId: string } }) {
+export async function GET(req: NextRequest, { params }: { params: { userId: string } }) {
   const { userId } = params;
 
   try {

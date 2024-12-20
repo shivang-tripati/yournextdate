@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Navbar from "@/components/ui/dsahboard-navbar";
-import DashboardPage from "./page"; // Ensure correct path
+import { DashboardPage } from "./dashboard"; // Ensure correct path
 import useAuthStore from "@/hooks/user-auth-store";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
