@@ -10,6 +10,7 @@ const fetcher = (url: string) => axios.get(url).then((res) => res.data);
 
 const OtherUserProfile = () => {
   const { userId, otherUserId } = useParams();
+
   const { data: user, error } = useSWR(
     userId ? `/api/profile/${otherUserId}` : null,
     fetcher

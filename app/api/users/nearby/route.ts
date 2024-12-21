@@ -3,16 +3,16 @@ import prisma from '@/lib/prisma';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const city = searchParams.get('city');
+  const nearBy = searchParams.get('nearBy');
 
-  if (!city) {
-    return NextResponse.json({ error: 'City is required' }, { status: 400 });
+  if (!nearBy) {
+    return NextResponse.json({ error: 'Nearby is required' }, { status: 400 });
   }
 
   try {
     const nearbyUsers = await prisma.user.findMany({
       where: {
-        city,
+        nearBy,
       },
     });
 

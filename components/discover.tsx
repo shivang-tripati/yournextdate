@@ -4,14 +4,16 @@ import axios from "axios";
 import Carousel from "@/components/ui/caraousel"; // Adjust import path if needed
 import Image from "next/image";
 import { FaHeart, FaEnvelope } from "react-icons/fa";
-
 import { images1 } from "@/utils/image";
+import useAuthStore from "@/hooks/user-auth-store";
+
 import {
-  fakeNearbyUsers,
-  fakeCityUsers,
+  // fakeNearbyUsers,
+  // fakeCityUsers,
   fakeCommonInterestUsers,
   fakeRecommendedUsers,
 } from "@/utils/data";
+import { useRouter } from "next/navigation";
 
 interface UserProfile {
   profilePictureUrl: string;
@@ -32,12 +34,15 @@ interface DiscoverProps {
 }
 
 const Discover: React.FC<DiscoverProps> = ({ userId }) => {
-  // const [nearbyUsers, setNearbyUsers] = useState<User[]>([]);
-  // const [cityUsers, setCityUsers] = useState<User[]>([]);
+  const [nearbyUsers, setNearbyUsers] = useState<User[]>([]);
+  const [cityUsers, setCityUsers] = useState<User[]>([]);
   // const [commonInterestUsers, setCommonInterestUsers] = useState<User[]>([]);
   // const [recommendedUsers, setRecommendedUsers] = useState<User[]>([]);
-  // const [loading, setLoading] = useState(true);
-  // const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const { user } = useAuthStore();
+  const router = useRouter();
 
   const { t1, t2, t3, t4 } = images1;
   const carouselItems = [
@@ -51,38 +56,38 @@ const Discover: React.FC<DiscoverProps> = ({ userId }) => {
     { image: "/pexels-vera-arsic-304265-984935.jpg", alt: "Image 5" },
   ];
 
-  // useEffect(() => {
-  //   const fetchUsers = async () => {
-  //     setLoading(true);
-  //     try {
-  //       const [
-  //         nearbyResponse,
-  //         cityResponse,
-  //         commonInterestResponse,
-  //         recommendedResponse,
-  //       ] = await Promise.all([
-  //         axios.get(`/api/users/nearby?userId=${userId}`),
-  //         axios.get(`/api/users/city?userId=${userId}`),
-  //         axios.get(`/api/users/common-interests?userId=${userId}`),
-  //         axios.get(`/api/users/recommended?userId=${userId}`),
-  //       ]);
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        const [
+          nearbyResponse,
+          cityResponse,
+          // commonInterestResponse,
+          // recommendedResponse,
+        ] = await Promise.all([
+          axios.get(`/api/users/nearby?nearBy=${user?.nearBy}`),
+          axios.get(`/api/users/city?city=${user?.city}`),
+          // axios.get(`/api/users/common-interests?userId=${userId}`),
+          // axios.get(`/api/users/recommended?userId=${userId}`),
+        ]);
 
-  //       setNearbyUsers(nearbyResponse.data);
-  //       setCityUsers(cityResponse.data);
-  //       setCommonInterestUsers(commonInterestResponse.data);
-  //       setRecommendedUsers(recommendedResponse.data);
-  //     } catch (error) {
-  //       setError("Failed to load users");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
+        setNearbyUsers(nearbyResponse.data);
+        setCityUsers(cityResponse.data);
+        // setCommonInterestUsers(commonInterestResponse.data);
+        // setRecommendedUsers(recommendedResponse.data);
+      } catch (error) {
+        setError("Failed to load users");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  //   fetchUsers();
-  // }, [userId]);
+    fetchUsers();
+  }, [user?.nearBy, user?.city]);
 
-  // if (loading) return <div>Loading...</div>;
-  // if (error) return <div>{error}</div>;
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
     <div className="mt-5">
@@ -98,10 +103,11 @@ const Discover: React.FC<DiscoverProps> = ({ userId }) => {
       <section className="mb-8 mx-12">
         <h2 className="text-xl font-semibold mb-4">Nearby Users</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {fakeNearbyUsers.map((user: User) => (
+          {nearbyUsers.map((user: User) => (
             <div
               key={user.id}
               className="p-4 border border-gray-300 rounded-md"
+              onClick={() => router.push(`/profile/${userId}/${user.id}`)}
             >
               <Image
                 src={t2 || user.profiles[0]?.profilePictureUrl}
@@ -111,9 +117,11 @@ const Discover: React.FC<DiscoverProps> = ({ userId }) => {
                 className="w-full h-[16rem] object-cover rounded-md mb-4"
               />
               <h3 className="text-lg font-semibold">{user.name}</h3>
-              <p>
-                {user.city}, {user.country}
-              </p>
+              <div>
+                <p>
+                  {user.city}, {user.country}
+                </p>
+              </div>
               <div className="flex gap-4 mt-5 justify-between">
                 <button className="shadow-lg flex items-center px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-600 transition">
                   <FaHeart className="mr-2" />
@@ -131,9 +139,11 @@ const Discover: React.FC<DiscoverProps> = ({ userId }) => {
 
       {/* City Users */}
       <section className="mb-8 mx-12">
-        <h2 className="text-xl font-semibold mb-4">Users from Your City</h2>
+        <h2 className="text-xl font-semibold mb-4">
+          Users from Your City {user?.city}
+        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {fakeCityUsers.map((user: User) => (
+          {cityUsers.map((user: User) => (
             <div
               key={user.id}
               className="p-4 border border-gray-300 rounded-md"

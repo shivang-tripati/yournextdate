@@ -40,6 +40,8 @@ const Navbar = ({
   const { user } = useAuthStore();
   const router = useRouter();
 
+  console.log(user);
+
   useEffect(() => {
     const activeItem = navRef.current?.querySelector(
       `[data-href='${activeSection}']`

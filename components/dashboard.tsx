@@ -5,7 +5,7 @@ import Discover from "@/components/discover";
 import Likes from "@/components/ui/likes";
 // Component for displaying selected conversation
 
-const DashboardPage = ({
+const Dashboard = ({
   activeSection,
   userId,
 }: {
@@ -27,4 +27,4 @@ const DashboardPage = ({
   );
 };
 
-export { DashboardPage };
+export { Dashboard };
